@@ -36,6 +36,7 @@ int const kAPI_TIMEOUT = 60.0;
         _trackedEvents = [[NSMutableArray alloc] init];
         _timerQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
         _processQueue = dispatch_queue_create("com.nthState.ChocolateAnalytics", DISPATCH_QUEUE_CONCURRENT);
+        _uniqueId = [[NSUUID UUID] UUIDString];
         [self tick];
     }
     return self;
@@ -44,6 +45,15 @@ int const kAPI_TIMEOUT = 60.0;
 - (void)track:(NSString *)category withKeyPath:(NSString *)keyPath andValue:(id)value
 {
     dispatch_barrier_async(_processQueue, ^{
+        
+        NSDictionary *dic = @{
+                              @"uniqueId": _uniqueId,
+                              @"category": category,
+                              @"keyPath": keyPath,
+                              @"value": value
+                              };
+        
+        [_trackedEvents addObject:dic];
         
     });
 }
