@@ -130,11 +130,18 @@ int const kAPI_TIMEOUT = 60.0;
 
 - (BOOL)sendSubSet:(NSArray *)subset
 {
-    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:_trackedEvents];
-    return [self post:data];
+    NSData *jsonData = [NSKeyedArchiver archivedDataWithRootObject:_trackedEvents];
+    
+    NSError *jsonError = nil;
+    NSData* data = [NSJSONSerialization dataWithJSONObject:jsonData
+                                                       options:0
+                                                         error:&jsonError];
+    NSString *jsonString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    
+    return [self post:data json:jsonString];
 }
 
-- (BOOL)post:(NSData *)data
+- (BOOL)post:(NSData *)jsonData json:(NSString *)jsonString
 {
     NSError *error = nil;
     NSURL *nsurl = [NSURL URLWithString:kAPI_BASE_URL];
@@ -143,16 +150,8 @@ int const kAPI_TIMEOUT = 60.0;
                                                        timeoutInterval:kAPI_TIMEOUT];
     [request setHTTPMethod:@""];
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-    
-    NSError *jsonError = nil;
-    NSData* jsonData = [NSJSONSerialization dataWithJSONObject:data
-                                                       options:0
-                                                         error:&jsonError];
-    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    
     [request setValue:jsonString forHTTPHeaderField:@"json"];
     [request setHTTPBody:jsonData];
-    
     
     
     NSHTTPURLResponse* urlResponse = nil;
