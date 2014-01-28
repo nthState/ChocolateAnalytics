@@ -1,0 +1,15 @@
+application: chocolateanalytics
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: true
+
+handlers:
+- url: /v1/en-gb/static
+  static_dir: v1/static
+
+- url: .*
+  script: main.application
+  
+builtins:
+- appstats: on
