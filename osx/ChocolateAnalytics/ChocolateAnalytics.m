@@ -6,6 +6,8 @@
 //  Copyright (c) 2014 nthState. All rights reserved.
 //
 
+#warning How do we handle data build up?
+
 #import "ChocolateAnalytics.h"
 
 NSString * const kAPI_BASE_URL = @"http://127.0.01:8010/v1/en-gb/tracker";
@@ -29,6 +31,8 @@ int const kAPI_TIMEOUT = 60.0;
     if (self)
     {
         _trackingId = trackingId;
+        _eventLimit = 20;
+        _errorCount = 0;
         _trackedEvents = [[NSMutableArray alloc] init];
         _timerQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
         _processQueue = dispatch_queue_create("com.nthState.ChocolateAnalytics", DISPATCH_QUEUE_CONCURRENT);
@@ -67,25 +71,60 @@ int const kAPI_TIMEOUT = 60.0;
     /*
      
      Take x entries, process and remove from queue(trackedEvents)
+     If it fails, try again 3 times. Then just back off for a bit.
      
      */
+    __block BOOL shouldTick = TRUE;
     __weak id localSelf = self;
     dispatch_barrier_async(_processQueue, ^{
         
-        NSArray *subset = [_trackedEvents subarrayWithRange:NSMakeRange(0, 20)];
-        [localSelf sendSubSet:subset];
+        NSUInteger top = [_trackedEvents count] >= _eventLimit ? _eventLimit : [_trackedEvents count];
+        
+        NSRange range = NSMakeRange(0, top);
+        NSArray *subset = [_trackedEvents subarrayWithRange:range];
+        BOOL sent = [localSelf sendSubSet:subset];
+        if (sent)
+        {
+            [_trackedEvents removeObjectsInRange:range];
+            _errorCount = 0;
+        } else {
+            _errorCount++;
+            if (_errorCount == 3)
+            {
+                shouldTick = FALSE;
+            }
+        }
         
     });
     
-    [self tick];
+    if (shouldTick == FALSE)
+    {
+        [self tryAgainLater];
+    } else {
+        [self tick];
+    }
 }
 
-- (void)sendSubSet:(NSArray *)subset
+- (void)tryAgainLater
 {
-    //NSData *myData = [NSKeyedArchiver archivedDataWithRootObject:_trackedEvents];
+    /*
+     
+     Keep backing off the retry
+     
+     */
+    __weak id localSelf = self;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 60 * _errorCount * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+        [localSelf tick];
+    });
 }
 
-- (NSData *)post:(NSData *)data
+- (BOOL)sendSubSet:(NSArray *)subset
+{
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:_trackedEvents];
+    return [self post:data];
+}
+
+- (BOOL)post:(NSData *)data
 {
     NSError *error = nil;
     NSURL *nsurl = [NSURL URLWithString:kAPI_BASE_URL];
@@ -112,9 +151,10 @@ int const kAPI_TIMEOUT = 60.0;
     if (error != nil)
     {
         NSLog(@"Url: %@ error: %@", kAPI_BASE_URL, [error localizedDescription]);
+        return FALSE;
     }
     
-    return responseData;
+    return TRUE;
 
 }
 
