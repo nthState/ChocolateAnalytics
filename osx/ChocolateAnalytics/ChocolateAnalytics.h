@@ -18,6 +18,7 @@ extern int const kAPI_TIMEOUT;
 @property (assign, nonatomic) int eventLimit;
 @property (assign, nonatomic) int errorCount;
 @property (strong, nonatomic) NSString *uniqueId;
+@property (strong, nonatomic) NSString *version;
 @property (strong, nonatomic) NSMutableArray *trackedEvents;
 @property (strong, nonatomic) dispatch_source_t timer_ticker;
 @property (strong, nonatomic) dispatch_queue_t timerQueue;
@@ -25,6 +26,6 @@ extern int const kAPI_TIMEOUT;
 
 + (id)instance;
 - (id)initWithTrackingId:(NSString *)trackingId;
-- (void)track:(NSString *)category withKeyPath:(NSString *)keyPath andValue:(id)value;
+- (void)track:(NSString *)keyPath withValue:(id)value;
 
 @end

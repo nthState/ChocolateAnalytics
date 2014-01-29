@@ -6,9 +6,9 @@
 //  Copyright (c) 2014 nthState. All rights reserved.
 //
 
-#warning How do we handle data build up?
-
 #import "ChocolateAnalytics.h"
+
+#warning We need to make this whole process run on a seperate thread.
 
 NSString * const kAPI_BASE_URL = @"http://127.0.01:8010/v1/en-gb/tracker";
 int const kAPI_TIMEOUT = 60.0;
@@ -36,19 +36,37 @@ int const kAPI_TIMEOUT = 60.0;
         _trackedEvents = [[NSMutableArray alloc] init];
         _timerQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
         _processQueue = dispatch_queue_create("com.nthState.ChocolateAnalytics", DISPATCH_QUEUE_CONCURRENT);
-        _uniqueId = [[NSUUID UUID] UUIDString];
+        
+        _uniqueId = [self retreiveUniqueId];
+        if (!_uniqueId) {
+            _uniqueId = [[NSUUID UUID] UUIDString];
+            [self saveUniqueId:_uniqueId];
+        }
+        
+        NSProcessInfo *pInfo = [NSProcessInfo processInfo];
+        _version = [pInfo operatingSystemVersionString];
+        
         [self tick];
     }
     return self;
 }
 
-- (void)track:(NSString *)category withKeyPath:(NSString *)keyPath andValue:(id)value
+- (void)saveUniqueId:(NSString*)value
+{
+    [[NSUserDefaults standardUserDefaults] setObject:value forKey:@"uniqueId"];
+}
+
+- (id)retreiveUniqueId
+{
+    return [[NSUserDefaults standardUserDefaults] objectForKey:@"uniqueId"];
+}
+
+- (void)track:(NSString *)keyPath withValue:(id)value
 {
     dispatch_barrier_async(_processQueue, ^{
         
         NSDictionary *dic = @{
-                              @"uniqueId": _uniqueId,
-                              @"category": category,
+                              @"datetime": [NSDate date],
                               @"keyPath": keyPath,
                               @"value": value
                               };
@@ -130,7 +148,13 @@ int const kAPI_TIMEOUT = 60.0;
 
 - (BOOL)sendSubSet:(NSArray *)subset
 {
-    NSData *jsonData = [NSKeyedArchiver archivedDataWithRootObject:_trackedEvents];
+    NSDictionary *wrapper = @{
+                              @"uniqueId": _uniqueId,
+                              @"version": _version,
+                              @"events": _trackedEvents
+                              };
+    
+    NSData *jsonData = [NSKeyedArchiver archivedDataWithRootObject:wrapper];
     
     NSError *jsonError = nil;
     NSData* data = [NSJSONSerialization dataWithJSONObject:jsonData
@@ -155,7 +179,7 @@ int const kAPI_TIMEOUT = 60.0;
     
     
     NSHTTPURLResponse* urlResponse = nil;
-    NSData *responseData = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponse error:&error];
+    [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponse error:&error];
     
     if (error != nil)
     {
