@@ -149,6 +149,7 @@ int const kAPI_TIMEOUT = 60.0;
 - (BOOL)sendSubSet:(NSArray *)subset
 {
     NSDictionary *wrapper = @{
+                              @"trackingId": _trackingId,
                               @"uniqueId": _uniqueId,
                               @"version": _version,
                               @"events": _trackedEvents
