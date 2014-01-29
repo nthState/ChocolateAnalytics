@@ -1,4 +1,5 @@
 import json
+import logging
 from baseHandler import BaseHandler
 from v1.service.trackerService import TrackerService
 
