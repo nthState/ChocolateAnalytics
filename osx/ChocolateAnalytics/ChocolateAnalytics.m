@@ -13,6 +13,19 @@
 NSString * const kAPI_BASE_URL = @"http://127.0.01:8010/v1/en-gb/tracker";
 int const kAPI_TIMEOUT = 60.0;
 
+@interface ChocolateAnalytics ()
+
+@property (assign, nonatomic) int eventLimit;
+@property (assign, nonatomic) int errorCount;
+@property (strong, nonatomic) NSString *uniqueId;
+@property (strong, nonatomic) NSString *version;
+@property (strong, nonatomic) NSMutableArray *trackedEvents;
+@property (strong, nonatomic) dispatch_source_t timer_ticker;
+@property (strong, nonatomic) dispatch_queue_t timerQueue;
+@property (strong, nonatomic) dispatch_queue_t processQueue;
+
+@end
+
 @implementation ChocolateAnalytics
 
 + (id)instance
@@ -49,6 +62,15 @@ int const kAPI_TIMEOUT = 60.0;
         [self tick];
     }
     return self;
+}
+
+- (void)setSchedule:(float)schedule
+{
+    if (schedule <= 0)
+    {
+        schedule = 20;
+    }
+    _schedule = schedule;
 }
 
 - (void)saveUniqueId:(NSString*)value

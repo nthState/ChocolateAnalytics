@@ -15,14 +15,6 @@ extern int const kAPI_TIMEOUT;
 
 @property (strong, nonatomic) NSString *trackingId;
 @property (assign, nonatomic) float schedule;
-@property (assign, nonatomic) int eventLimit;
-@property (assign, nonatomic) int errorCount;
-@property (strong, nonatomic) NSString *uniqueId;
-@property (strong, nonatomic) NSString *version;
-@property (strong, nonatomic) NSMutableArray *trackedEvents;
-@property (strong, nonatomic) dispatch_source_t timer_ticker;
-@property (strong, nonatomic) dispatch_queue_t timerQueue;
-@property (strong, nonatomic) dispatch_queue_t processQueue;
 
 + (id)instance;
 - (id)initWithTrackingId:(NSString *)trackingId;
