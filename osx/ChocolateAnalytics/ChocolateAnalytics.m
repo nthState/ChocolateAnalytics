@@ -152,7 +152,7 @@ int const kAPI_TIMEOUT = 60.0;
                               @"trackingId": _trackingId,
                               @"uniqueId": _uniqueId,
                               @"version": _version,
-                              @"events": _trackedEvents
+                              @"events": subset
                               };
     
     NSData *jsonData = [NSKeyedArchiver archivedDataWithRootObject:wrapper];
