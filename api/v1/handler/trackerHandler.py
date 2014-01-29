@@ -9,5 +9,5 @@ class TrackerClassPlural(BaseHandler):
 		self.JSONResponse(response)
 	def post(self, locale):
 		locale = self.GetLocale(locale)
-		response = TrackService.Track(locale, json.loads(self.request.body))
+		response = TrackerService.Track(locale, json.loads(self.request.body))
 		self.JSONResponse(response)

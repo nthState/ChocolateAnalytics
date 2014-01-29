@@ -15,6 +15,7 @@
 		761FDFD01897FE2A005AFFB2 /* ChocolateAnalytics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 761FDFB31897FE2A005AFFB2 /* ChocolateAnalytics.framework */; };
 		761FDFD61897FE2A005AFFB2 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 761FDFD41897FE2A005AFFB2 /* InfoPlist.strings */; };
 		761FDFD81897FE2A005AFFB2 /* ChocolateAnalyticsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 761FDFD71897FE2A005AFFB2 /* ChocolateAnalyticsTests.m */; };
+		7699C02C189955C10093B485 /* ChocolateAnalytics.h in Headers */ = {isa = PBXBuildFile; fileRef = 761FDFC31897FE2A005AFFB2 /* ChocolateAnalytics.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -151,6 +152,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7699C02C189955C10093B485 /* ChocolateAnalytics.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -448,6 +450,7 @@
 				761FDFDD1897FE2A005AFFB2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		761FDFDE1897FE2A005AFFB2 /* Build configuration list for PBXNativeTarget "ChocolateAnalyticsTests" */ = {
 			isa = XCConfigurationList;
@@ -456,6 +459,7 @@
 				761FDFE01897FE2A005AFFB2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

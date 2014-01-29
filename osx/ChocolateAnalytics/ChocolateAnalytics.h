@@ -17,7 +17,7 @@ extern int const kAPI_TIMEOUT;
 @property (assign, nonatomic) float schedule;
 
 + (id)instance;
-- (id)initWithTrackingId:(NSString *)trackingId;
+- (void)initWithTrackingId:(NSString *)trackingId;
 - (void)track:(NSString *)keyPath withValue:(id)value;
 
 @end

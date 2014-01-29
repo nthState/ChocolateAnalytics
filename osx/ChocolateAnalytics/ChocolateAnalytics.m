@@ -10,7 +10,7 @@
 
 #warning We need to make this whole process run on a seperate thread.
 
-NSString * const kAPI_BASE_URL = @"http://127.0.01:8010/v1/en-gb/tracker";
+NSString * const kAPI_BASE_URL = @"http://localhost:13080/v1/en-gb/tracker";
 int const kAPI_TIMEOUT = 60.0;
 
 @interface ChocolateAnalytics ()
@@ -38,30 +38,27 @@ int const kAPI_TIMEOUT = 60.0;
     return _sharedObject;
 }
 
-- (id)initWithTrackingId:(NSString *)trackingId;
+- (void)initWithTrackingId:(NSString *)trackingId;
 {
-    self = [super init];
-    if (self)
-    {
-        _trackingId = trackingId;
-        _eventLimit = 20;
-        _errorCount = 0;
-        _trackedEvents = [[NSMutableArray alloc] init];
-        _timerQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-        _processQueue = dispatch_queue_create("com.nthState.ChocolateAnalytics", DISPATCH_QUEUE_CONCURRENT);
-        
-        _uniqueId = [self retreiveUniqueId];
-        if (!_uniqueId) {
-            _uniqueId = [[NSUUID UUID] UUIDString];
-            [self saveUniqueId:_uniqueId];
-        }
-        
-        NSProcessInfo *pInfo = [NSProcessInfo processInfo];
-        _version = [pInfo operatingSystemVersionString];
-        
-        [self tick];
+
+    _trackingId = trackingId;
+    _eventLimit = 20;
+    _errorCount = 0;
+    _trackedEvents = [[NSMutableArray alloc] init];
+    _timerQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    _processQueue = dispatch_queue_create("com.nthState.ChocolateAnalytics", DISPATCH_QUEUE_CONCURRENT);
+    
+    _uniqueId = [self retreiveUniqueId];
+    if (!_uniqueId) {
+        _uniqueId = [[NSUUID UUID] UUIDString];
+        [self saveUniqueId:_uniqueId];
     }
-    return self;
+    
+    NSProcessInfo *pInfo = [NSProcessInfo processInfo];
+    _version = [pInfo operatingSystemVersionString];
+    
+    [self tick];
+
 }
 
 - (void)setSchedule:(float)schedule
@@ -87,8 +84,12 @@ int const kAPI_TIMEOUT = 60.0;
 {
     dispatch_barrier_async(_processQueue, ^{
         
+        NSDateFormatter *dateFormater = [[NSDateFormatter alloc] init];
+        [dateFormater setDateFormat: @"yyyy-MM-dd HH:mm:ss zzz"];
+        NSString *stringFromDate = [dateFormater stringFromDate:[NSDate date]];
+        
         NSDictionary *dic = @{
-                              @"datetime": [NSDate date],
+                              @"datetime": stringFromDate,
                               @"keyPath": keyPath,
                               @"value": value
                               };
@@ -176,11 +177,9 @@ int const kAPI_TIMEOUT = 60.0;
                               @"version": _version,
                               @"events": subset
                               };
-    
-    NSData *jsonData = [NSKeyedArchiver archivedDataWithRootObject:wrapper];
-    
+
     NSError *jsonError = nil;
-    NSData* data = [NSJSONSerialization dataWithJSONObject:jsonData
+    NSData* data = [NSJSONSerialization dataWithJSONObject:wrapper
                                                        options:0
                                                          error:&jsonError];
     NSString *jsonString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
@@ -195,7 +194,7 @@ int const kAPI_TIMEOUT = 60.0;
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:nsurl
                                                            cachePolicy:NSURLRequestReloadIgnoringCacheData
                                                        timeoutInterval:kAPI_TIMEOUT];
-    [request setHTTPMethod:@""];
+    [request setHTTPMethod:@"POST"];
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
     [request setValue:jsonString forHTTPHeaderField:@"json"];
     [request setHTTPBody:jsonData];
