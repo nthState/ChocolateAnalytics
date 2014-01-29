@@ -13,7 +13,7 @@ class TrackerService(BaseService):
 		mdl = TrackModel()
 		mdl.trackingId = data.get('trackingId', 'None')
 		mdl.uniqueId = data.get('uniqueId', 'None')
-		mdl.versionId = data.get('versionId', 'None')
+		mdl.version = data.get('version', 'None')
 		mdl.events = data.get('events', 'None')
 		mdl.put()
 	

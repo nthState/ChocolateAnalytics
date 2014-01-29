@@ -10,7 +10,7 @@
 
 #warning We need to make this whole process run on a seperate thread.
 
-NSString * const kAPI_BASE_URL = @"http://localhost:13080/v1/en-gb/tracker";
+NSString * const kAPI_BASE_URL = @"http://nthstate-analytics.appspot.com/v1/en-gb/tracker";
 int const kAPI_TIMEOUT = 60.0;
 
 @interface ChocolateAnalytics ()
@@ -199,6 +199,8 @@ int const kAPI_TIMEOUT = 60.0;
     [request setValue:jsonString forHTTPHeaderField:@"json"];
     [request setHTTPBody:jsonData];
     
+    NSString *postLength = [NSString stringWithFormat:@"%lu", (unsigned long)[jsonData length]];
+    [request setValue:postLength forHTTPHeaderField:@"Content-Length"];
     
     NSHTTPURLResponse* urlResponse = nil;
     [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponse error:&error];
