@@ -14,7 +14,11 @@
 {
     [[ChocolateAnalytics instance] initWithTrackingId:@"my-id"];
     
-    [[ChocolateAnalytics instance] track:@"a.b.c" withValue:@"1"];
+    
+    for (int i = 0; i < 25; i++)
+    {
+        [[ChocolateAnalytics instance] track:@"a.b.c" withValue:[NSString stringWithFormat:@"%d", i]];
+    }
 }
 
 @end

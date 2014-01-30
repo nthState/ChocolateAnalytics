@@ -14,7 +14,7 @@ extern int const kAPI_TIMEOUT;
 @interface ChocolateAnalytics : NSObject
 
 @property (strong, nonatomic) NSString *trackingId;
-@property (assign, nonatomic) float schedule;
+@property (assign, nonatomic) int schedule;
 
 + (id)instance;
 - (void)initWithTrackingId:(NSString *)trackingId;

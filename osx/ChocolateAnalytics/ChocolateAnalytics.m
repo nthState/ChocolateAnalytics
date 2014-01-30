@@ -20,8 +20,6 @@ int const kAPI_TIMEOUT = 60.0;
 @property (strong, nonatomic) NSString *uniqueId;
 @property (strong, nonatomic) NSString *version;
 @property (strong, nonatomic) NSMutableArray *trackedEvents;
-@property (strong, nonatomic) dispatch_source_t timer_ticker;
-@property (strong, nonatomic) dispatch_queue_t timerQueue;
 @property (strong, nonatomic) dispatch_queue_t processQueue;
 
 @end
@@ -43,9 +41,9 @@ int const kAPI_TIMEOUT = 60.0;
 
     _trackingId = trackingId;
     _eventLimit = 20;
+    _schedule = 5;
     _errorCount = 0;
     _trackedEvents = [[NSMutableArray alloc] init];
-    _timerQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     _processQueue = dispatch_queue_create("com.nthState.ChocolateAnalytics", DISPATCH_QUEUE_CONCURRENT);
     
     _uniqueId = [self retreiveUniqueId];
@@ -61,7 +59,7 @@ int const kAPI_TIMEOUT = 60.0;
 
 }
 
-- (void)setSchedule:(float)schedule
+- (void)setSchedule:(int)schedule
 {
     if (schedule <= 0)
     {
@@ -102,19 +100,9 @@ int const kAPI_TIMEOUT = 60.0;
 - (void)tick
 {
     __weak id localSelf = self;
-    _timer_ticker = dispatch_source_create(
-                                           DISPATCH_SOURCE_TYPE_TIMER, 0, 0,
-                                           _timerQueue);
-    dispatch_source_set_timer(_timer_ticker,
-                              dispatch_time(DISPATCH_TIME_NOW, _schedule * NSEC_PER_SEC),
-                              DISPATCH_TIME_FOREVER, 0);
-    dispatch_source_set_event_handler(_timer_ticker, ^{
-        dispatch_source_cancel(_timer_ticker);
-        
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, _schedule * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         [localSelf processAndStartAgain];
-        
     });
-    dispatch_resume(_timer_ticker);
 }
 
 - (void)processAndStartAgain
@@ -130,6 +118,11 @@ int const kAPI_TIMEOUT = 60.0;
     dispatch_barrier_async(_processQueue, ^{
         
         NSUInteger top = [_trackedEvents count] >= _eventLimit ? _eventLimit : [_trackedEvents count];
+        
+        if (top == 0)
+        {
+            return;
+        }
         
         NSRange range = NSMakeRange(0, top);
         NSArray *subset = [_trackedEvents subarrayWithRange:range];
