@@ -19,5 +19,6 @@ extern int const kAPI_TIMEOUT;
 + (id)instance;
 - (void)initWithTrackingId:(NSString *)trackingId;
 - (void)track:(NSString *)keyPath withValue:(id)value;
+- (void)track:(id)value withKeyPath:(NSString *)keyPath;
 
 @end

@@ -8,9 +8,9 @@
 
 #import "ChocolateAnalytics.h"
 
-#warning We need to make this whole process run on a seperate thread.
+// We need to make this whole process run on a seperate thread.
 
-NSString * const kAPI_BASE_URL = @"http://nthstate-analytics.appspot.com/v1/en-gb/tracker";
+NSString * const kAPI_BASE_URL = @"http://analytics.nthstate.com/v1/en-gb/tracker";
 int const kAPI_TIMEOUT = 60.0;
 
 @interface ChocolateAnalytics ()
@@ -22,9 +22,14 @@ int const kAPI_TIMEOUT = 60.0;
 @property (strong, nonatomic) NSMutableArray *trackedEvents;
 @property (strong, nonatomic) dispatch_queue_t processQueue;
 
+@property (assign, nonatomic) BOOL running;
+@property (assign, nonatomic) BOOL hasSomethingToSend;
+
 @end
 
 @implementation ChocolateAnalytics
+
+@synthesize hasSomethingToSend = _hasSomethingToSend;
 
 + (id)instance
 {
@@ -55,7 +60,8 @@ int const kAPI_TIMEOUT = 60.0;
     NSProcessInfo *pInfo = [NSProcessInfo processInfo];
     _version = [pInfo operatingSystemVersionString];
     
-    [self tick];
+    _hasSomethingToSend = FALSE;
+    _running = FALSE;
 
 }
 
@@ -80,6 +86,27 @@ int const kAPI_TIMEOUT = 60.0;
 
 - (void)track:(NSString *)keyPath withValue:(id)value
 {
+    self.hasSomethingToSend = TRUE;
+    dispatch_barrier_async(_processQueue, ^{
+        
+        NSDateFormatter *dateFormater = [[NSDateFormatter alloc] init];
+        [dateFormater setDateFormat: @"yyyy-MM-dd HH:mm:ss zzz"];
+        NSString *stringFromDate = [dateFormater stringFromDate:[NSDate date]];
+        
+        NSDictionary *dic = @{
+                              @"datetime": stringFromDate,
+                              @"keyPath": keyPath,
+                              @"value": value
+                              };
+        
+        [_trackedEvents addObject:dic];
+        
+    });
+}
+
+- (void)track:(id)value withKeyPath:(NSString *)keyPath
+{
+    self.hasSomethingToSend = TRUE;
     dispatch_barrier_async(_processQueue, ^{
         
         NSDateFormatter *dateFormater = [[NSDateFormatter alloc] init];
@@ -99,6 +126,11 @@ int const kAPI_TIMEOUT = 60.0;
 
 - (void)tick
 {
+    if (_hasSomethingToSend == FALSE || _running == FALSE)
+    {
+        return;
+    }
+    
     __weak id localSelf = self;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, _schedule * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         [localSelf processAndStartAgain];
@@ -121,6 +153,8 @@ int const kAPI_TIMEOUT = 60.0;
         
         if (top == 0)
         {
+            _hasSomethingToSend = FALSE;
+            _running = FALSE;
             return;
         }
         
@@ -133,20 +167,22 @@ int const kAPI_TIMEOUT = 60.0;
             _errorCount = 0;
         } else {
             _errorCount++;
-            if (_errorCount == 3)
+            if (_errorCount >= 3)
             {
                 shouldTick = FALSE;
             }
         }
         
+        if (shouldTick == FALSE)
+        {
+            [self tryAgainLater];
+        } else {
+            [self tick];
+        }
+        
     });
     
-    if (shouldTick == FALSE)
-    {
-        [self tryAgainLater];
-    } else {
-        [self tick];
-    }
+    
 }
 
 - (void)tryAgainLater
@@ -206,6 +242,20 @@ int const kAPI_TIMEOUT = 60.0;
     
     return TRUE;
 
+}
+
+- (BOOL)hasSomethingToSend
+{
+    return _hasSomethingToSend;
+}
+- (void)setHasSomethingToSend:(BOOL)hasSomethingToSend
+{
+    _hasSomethingToSend = hasSomethingToSend;
+    if (_running == FALSE && hasSomethingToSend == TRUE)
+    {
+        _running = TRUE;
+        [self tick];
+    }
 }
 
 @end
