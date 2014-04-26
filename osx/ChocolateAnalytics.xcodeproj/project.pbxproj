@@ -29,6 +29,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		673F9F48190BE1F60046232D /* ChocolateAnalytics.framework.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = ChocolateAnalytics.framework.entitlements; sourceTree = "<group>"; };
 		761FDFB31897FE2A005AFFB2 /* ChocolateAnalytics.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ChocolateAnalytics.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		761FDFB61897FE2A005AFFB2 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		761FDFB91897FE2A005AFFB2 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -110,6 +111,7 @@
 		761FDFBC1897FE2A005AFFB2 /* ChocolateAnalytics */ = {
 			isa = PBXGroup;
 			children = (
+				673F9F48190BE1F60046232D /* ChocolateAnalytics.framework.entitlements */,
 				761FDFC31897FE2A005AFFB2 /* ChocolateAnalytics.h */,
 				761FDFC41897FE2A005AFFB2 /* ChocolateAnalytics.m */,
 				761FDFBD1897FE2A005AFFB2 /* Supporting Files */,
@@ -308,6 +310,7 @@
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -364,6 +367,7 @@
 		761FDFDC1897FE2A005AFFB2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ChocolateAnalytics/ChocolateAnalytics.framework.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -380,6 +384,8 @@
 		761FDFDD1897FE2A005AFFB2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ChocolateAnalytics/ChocolateAnalytics.framework.entitlements;
+				CODE_SIGN_IDENTITY = "Developer ID Application: NTHSTATE LTD (QA8E8RMHCT)";
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
