@@ -5,3 +5,4 @@ class Track(ndb.Model):
 	uniqueId = ndb.StringProperty()
 	version = ndb.StringProperty()
 	events = ndb.JsonProperty()
+	createDate = ndb.DateTimeProperty(auto_now_add=True)
